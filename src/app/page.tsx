@@ -234,7 +234,7 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 relative z-10">
             <div className="space-y-3 relative">
               <div className="w-10 h-10 rounded-full bg-black border border-emerald-500/40 text-emerald-400 font-mono text-sm flex items-center justify-center shadow-lg shadow-emerald-500/10">01</div>
-              <h4 class="font-bold text-white text-base">Ingest Strategy</h4>
+              <h4 className="font-bold text-white text-base">Ingest Strategy</h4>
               <p className="text-gray-400 text-xs leading-relaxed">Provide your product concept or system requirements statement via our intuitive capture terminal.</p>
             </div>
             <div className="space-y-3 relative">
