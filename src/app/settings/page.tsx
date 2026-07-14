@@ -30,8 +30,8 @@ export default function SettingsPage() {
   };
 
   const handlePlanToggle = () => {
-    const nextPlan = settings.plan === "free" ? "premium" : "free";
-    const updated = { ...settings, plan: nextPlan };
+    const nextPlan: "free" | "premium" = settings.plan === "free" ? "premium" : "free";
+    const updated: UserSettings = { ...settings, plan: nextPlan };
     setSettings(updated);
     saveStoredSettings(updated);
     setSaved(true);

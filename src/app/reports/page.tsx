@@ -3,7 +3,7 @@
 import React, { useEffect, useState, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Cpu, ArrowLeft, FileText, CheckCircle, BarChart2, ShieldAlert, Award, Compass, DollarSign, Layers, Calendar, Activity, Zap, TrendingUp, Sliders } from "lucide-react";
+import { Cpu, ArrowLeft, FileText, CheckCircle, BarChart2, ShieldAlert, Award, Compass, DollarSign, Layers, Calendar, Activity, Zap, TrendingUp, Sliders, AlertTriangle, Loader2 } from "lucide-react";
 import { getStoredRoastById, StartupRoast, getStoredRoasts } from "@/lib/db";
 
 function ReportsContent() {
