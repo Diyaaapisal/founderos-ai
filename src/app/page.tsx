@@ -239,17 +239,17 @@ export default function Home() {
             </div>
             <div className="space-y-3 relative">
               <div className="w-10 h-10 rounded-full bg-black border border-cyan-500/40 text-cyan-400 font-mono text-sm flex items-center justify-center shadow-lg shadow-cyan-500/10">02</div>
-              <h4 class="font-bold text-white text-base">Stress Simulation</h4>
+              <h4 className="font-bold text-white text-base">Stress Simulation</h4>
               <p className="text-gray-400 text-xs leading-relaxed">AI engine runs simulations against public registries, market datasets, and tech-stack bottlenecks.</p>
             </div>
             <div className="space-y-3 relative">
               <div className="w-10 h-10 rounded-full bg-black border border-purple-500/40 text-purple-400 font-mono text-sm flex items-center justify-center shadow-lg shadow-purple-500/10">03</div>
-              <h4 class="font-bold text-white text-base">Financial Mapping</h4>
+              <h4 className="font-bold text-white text-base">Financial Mapping</h4>
               <p className="text-gray-400 text-xs leading-relaxed">Generates automated structural cash limits, shared partner accounts, and capital trajectory charts.</p>
             </div>
             <div className="space-y-3 relative">
               <div className="w-10 h-10 rounded-full bg-black border border-emerald-400 text-black font-mono text-sm font-bold flex items-center justify-center shadow-lg shadow-emerald-400/20">04</div>
-              <h4 class="font-bold text-white text-base">Venture Deployment</h4>
+              <h4 className="font-bold text-white text-base">Venture Deployment</h4>
               <p className="text-gray-400 text-xs leading-relaxed">Export institutional investor reports and manage multi-member corporate transactions instantly.</p>
             </div>
           </div>
