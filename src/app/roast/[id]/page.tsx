@@ -12,7 +12,7 @@ export default function RoastDetailPage() {
   const id = params.id as string;
 
   const [roast, setRoast] = useState<StartupRoast | null>(null);
-  const [activeTab, setActiveTab] = useState<"verdict" | "debate" | "remediation">("verdict");
+  const [activeTab, setActiveTab] = useState<"verdict" | "debate" | "remediation" | "support">("verdict");
 
   useEffect(() => {
     if (id) {
@@ -224,9 +224,17 @@ export default function RoastDetailPage() {
             onClick={() => setActiveTab("remediation")}
             className={`px-6 py-3.5 font-bold transition-all border-b-2 ${
               activeTab === "remediation" ? "border-emerald-500 text-white bg-emerald-500/5" : "border-transparent text-gray-450 hover:text-white"
-            } flex items-center gap-1.5`}
+            } flex items-center gap-1.5 whitespace-nowrap`}
           >
             <Compass className="w-4 h-4" /> Remediation Actions
+          </button>
+          <button
+            onClick={() => setActiveTab("support")}
+            className={`px-6 py-3.5 font-bold transition-all border-b-2 ${
+              activeTab === "support" ? "border-teal-500 text-white bg-teal-500/5" : "border-transparent text-gray-450 hover:text-white"
+            } flex items-center gap-1.5 whitespace-nowrap`}
+          >
+            <Award className="w-4 h-4" /> Founder Support
           </button>
         </div>
 
@@ -281,7 +289,7 @@ export default function RoastDetailPage() {
               
               <div className="p-3.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 flex items-center justify-between no-print">
                 <span className="flex items-center gap-1.5"><Compass className="w-4 h-4 text-emerald-400 animate-spin" /> Adversarial Anti-Consensus protocol enforced.</span>
-                <span className="text-emerald-400 font-bold">5 NODES DIVERGING</span>
+                <span className="text-emerald-400 font-bold">6 NODES DIVERGING</span>
               </div>
 
               <div className="space-y-4">
@@ -348,6 +356,48 @@ export default function RoastDetailPage() {
                 </div>
               </div>
 
+            </div>
+          )}
+
+          {/* Tab 4: Founder Support */}
+          {activeTab === "support" && (
+            <div className="space-y-6">
+              <div className="p-6 rounded-2xl bg-teal-950/20 border border-teal-500/30 flex gap-4 items-start relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-[200px] h-[200px] bg-teal-500/5 rounded-full blur-3xl pointer-events-none"></div>
+                <div className="p-2.5 rounded-xl bg-teal-500/10 text-teal-400 shrink-0">
+                  <Award className="w-6 h-6" />
+                </div>
+                <div className="space-y-3 z-10 relative">
+                  <h4 className="heading-font text-lg font-bold text-teal-300">Supportive Mentor Feedback</h4>
+                  {debateLogs.filter(log => log.agent === "Supportive Mentor").map((log, index) => (
+                    <div key={index} className="space-y-4 pt-2">
+                      <p className="text-gray-300 text-sm leading-relaxed font-sans italic border-l-2 border-teal-500/40 pl-3">
+                        &quot;{log.quote}&quot;
+                      </p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-4 rounded-xl bg-black/40 border border-white/5">
+                          <h5 className="text-teal-400 font-bold text-[10px] uppercase mb-1">Founder Strengths</h5>
+                          <p className="text-gray-400 text-xs leading-relaxed">{log.positive}</p>
+                        </div>
+                        <div className="p-4 rounded-xl bg-black/40 border border-white/5">
+                          <h5 className="text-teal-400 font-bold text-[10px] uppercase mb-1">Growth Blueprint</h5>
+                          <p className="text-gray-400 text-xs leading-relaxed">{log.opportunity}</p>
+                        </div>
+                      </div>
+                      <div className="p-4 rounded-xl bg-teal-500/5 border border-teal-500/20">
+                         <h5 className="text-teal-400 font-bold text-[10px] uppercase mb-1">Perspective Shift</h5>
+                         <p className="text-gray-400 text-xs leading-relaxed">{log.warning} {log.negative}</p>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {debateLogs.filter(log => log.agent === "Supportive Mentor").length === 0 && (
+                    <p className="text-gray-400 text-xs leading-relaxed italic pt-2">
+                      Your supportive mentor is currently reviewing your dossier. Hang tight.
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           )}
 

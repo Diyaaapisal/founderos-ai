@@ -17,6 +17,7 @@ export default function NewRoastPage() {
   const [step, setStep] = useState(1);
   const [loadingQuestions, setLoadingQuestions] = useState(false);
   const [error, setError] = useState("");
+  const [validationMessage, setValidationMessage] = useState("");
 
   // Form State
   const [idea, setIdea] = useState("");
@@ -33,10 +34,33 @@ export default function NewRoastPage() {
   const [followUps, setFollowUps] = useState<FollowUpQuestion[]>([]);
 
   // Navigation handlers
-  const nextStep = () => setStep((s) => s + 1);
-  const prevStep = () => setStep((s) => s - 1);
+  const nextStep = () => {
+    setValidationMessage("");
+    if (step === 1 && (!idea || !targetAudience)) {
+      setValidationMessage("Friendly tip: Please provide a brief idea and target audience so we can understand your vision before moving forward!");
+      return;
+    }
+    if (step === 2 && (!pricingModel || !acquisitionStrategy || !geography)) {
+      setValidationMessage("Friendly tip: Please share your distribution plan first, then move forward!");
+      return;
+    }
+    setStep((s) => s + 1);
+  };
+  const prevStep = () => {
+    setValidationMessage("");
+    setStep((s) => s - 1);
+  };
 
   // Submit Step 3 to fetch custom follow-up questions
+  const handleFetchFollowUps = () => {
+    setValidationMessage("");
+    if (!founderBackground || !competitors || !resources) {
+      setValidationMessage("Friendly tip: Please help us understand your background and resources first, then move forward!");
+      return;
+    }
+    fetchFollowUps();
+  };
+
   const fetchFollowUps = async () => {
     setError("");
     setLoadingQuestions(true);
@@ -81,6 +105,12 @@ export default function NewRoastPage() {
 
   // Submit Follow-ups to trigger live debate
   const handleSimulateDebate = () => {
+    setValidationMessage("");
+    if (followUps.some((f) => !f.answer.trim())) {
+      setValidationMessage("Friendly tip: Please provide a defense for each question first, then move forward!");
+      return;
+    }
+
     const inputs = {
       idea,
       targetAudience,
@@ -129,6 +159,12 @@ export default function NewRoastPage() {
         {error && (
           <div className="mb-6 p-4 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 text-xs">
             {error}
+          </div>
+        )}
+        
+        {validationMessage && (
+          <div className="mb-6 p-4 rounded-lg border border-blue-500/30 bg-blue-500/10 text-blue-300 text-xs flex items-center">
+            <span className="mr-2">💡</span> {validationMessage}
           </div>
         )}
 
@@ -209,8 +245,7 @@ export default function NewRoastPage() {
             <div className="flex justify-end pt-4 border-t border-white/[0.05]">
               <button
                 onClick={nextStep}
-                disabled={!idea || !targetAudience}
-                className="px-6 py-2 rounded-full text-xs font-semibold bg-white text-black hover:bg-neutral-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 rounded-full text-xs font-semibold bg-white text-black hover:bg-neutral-200 transition-all"
               >
                 Continue →
               </button>
@@ -272,8 +307,7 @@ export default function NewRoastPage() {
               </button>
               <button
                 onClick={nextStep}
-                disabled={!pricingModel || !acquisitionStrategy || !geography}
-                className="px-6 py-2 rounded-full text-xs font-semibold bg-white text-black hover:bg-neutral-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-6 py-2 rounded-full text-xs font-semibold bg-white text-black hover:bg-neutral-200 transition-all"
               >
                 Continue →
               </button>
@@ -336,9 +370,8 @@ export default function NewRoastPage() {
                 Back
               </button>
               <button
-                onClick={fetchFollowUps}
-                disabled={!founderBackground || !competitors || !resources}
-                className="px-6 py-2 rounded-full text-xs font-semibold bg-gradient-to-tr from-purple-600 to-blue-500 text-white hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                onClick={handleFetchFollowUps}
+                className="px-6 py-2 rounded-full text-xs font-semibold bg-gradient-to-tr from-purple-600 to-blue-500 text-white hover:opacity-90 transition-all shadow-md"
               >
                 Expose Blind Spots →
               </button>
@@ -381,7 +414,7 @@ export default function NewRoastPage() {
                     Q{idx + 1}: {item.question}
                   </label>
                   <textarea
-                    placeholder="Provide your defense..."
+                    placeholder={idx === 0 ? "Example Answer: We plan to use B2B cold emailing and LinkedIn outreach to acquire our first 100 users..." : "Provide your defense..."}
                     value={item.answer}
                     onChange={(e) => {
                       const updated = [...followUps];
@@ -404,8 +437,7 @@ export default function NewRoastPage() {
               </button>
               <button
                 onClick={handleSimulateDebate}
-                disabled={followUps.some((f) => !f.answer.trim())}
-                className="px-6 py-2 rounded-full text-xs font-semibold bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                className="px-6 py-2 rounded-full text-xs font-semibold bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:opacity-90 transition-all shadow-md"
               >
                 Deploy Syndicate →
               </button>
