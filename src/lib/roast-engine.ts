@@ -147,6 +147,17 @@ function generateOfflineDebateAndReport(inputs: any, followUps: any[]): StartupR
         warning: `The second you get traction, we will copy your exact features, launch it as a free toggle button, and buy Google Ads on your brand name.`,
         opportunity: `If you build a very specific API integration for a CRM we don't support, we might acquire you for talent-acq ($200k) in two years.`,
         quote: `We have 150 developers and a $15M marketing budget. If you somehow get traction in our segment, we will package your entire core product as a free toggle button in our next release.`
+      },
+      {
+        agent: "Supportive Mentor",
+        role: "Startup Coach & Angel",
+        avatar: "SM",
+        color: "teal",
+        positive: `The fact that you are taking action on this idea with limited resources is the strongest indicator of potential success. You have the grit to make this work.`,
+        negative: `The harsh reality is that the market won't be easy, but knowing these flaws now gives you an incredible advantage over founders who launch blindly.`,
+        warning: `Don't let the harsh VC feedback discourage you. Their job is to find reasons to say no. Your job is to find the one narrow path to make it a yes.`,
+        opportunity: `Use the brutal roast above as your exact roadmap. Fix the distribution flaw, tighten the pricing, and you have a genuinely viable path to profitability.`,
+        quote: `Every massive success started as a flawed, risky idea that a dozen experts laughed at. You have the blueprint now—go execute and prove them wrong.`
       }
     ],
     scores: {
@@ -269,12 +280,13 @@ export async function getAiDebateAndReport(inputs: any, followUps: any[], settin
   };
 
   const systemPrompt = `You are the core of Startup Roast AI. Perform a structured multi-agent debate and output a detailed audit report.
-The 5 agents involved in the AACP debate are:
+The 6 agents involved in the AACP debate are:
 1. VC Investor (VC): Ex-Partner, top-tier fund. Highly critical of TAM, scaling, exit paths.
 2. Cynical Founder (CF): Built & failed 3 times, exited once. Focuses on burnout, operations, churn, brutal realities.
 3. Growth Hacker (GH): Scale specialist. Skeptical of paid ads, targets clever distribution loops.
 4. Customer Persona (CP): Target buyer. Hates new logins, requires manager sign-off.
 5. Technical Architect (TA): Systems engineer. Exposes database provision costs, wrapper risks, security holes.
+6. Supportive Mentor (SM): Startup coach. Finds the silver lining, provides actionable optimistic feedback, encourages the founder.
 
 Ensure they argue with each other, call out each other's assumptions, and actively avoid consensus (Adversarial Anti-Consensus Protocol).
 
@@ -292,7 +304,7 @@ Output MUST be a single, parseable JSON object matching exactly the following Ty
       "opportunity": "Adjacent high-growth angle...",
       "quote": "Short, memorable, brutal 2-sentence punchline quote"
     },
-    ... (similarly for CF, GH, CP, TA)
+    ... (similarly for CF, GH, CP, TA, SM)
   ],
   "scores": {
     "startupScore": 38, // 1-100 overall viability
