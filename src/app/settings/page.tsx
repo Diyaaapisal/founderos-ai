@@ -59,7 +59,15 @@ export default function SettingsPage() {
   }, [reset]);
 
   const onSave = (data: SettingsFormValues) => {
-    saveStoredSettings(data);
+    saveStoredSettings({
+      mode: data.mode,
+      plan: data.plan,
+      openAiKey: data.openAiKey || "",
+      geminiKey: data.geminiKey || "",
+      supabaseUrl: data.supabaseUrl || "",
+      supabaseKey: data.supabaseKey || "",
+      upiId: data.upiId || "",
+    });
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
@@ -70,7 +78,15 @@ export default function SettingsPage() {
     
     // Auto-save when toggling plan for UX convenience
     const currentData = watch();
-    saveStoredSettings({ ...currentData, plan: nextPlan });
+    saveStoredSettings({
+      mode: currentData.mode,
+      plan: nextPlan,
+      openAiKey: currentData.openAiKey || "",
+      geminiKey: currentData.geminiKey || "",
+      supabaseUrl: currentData.supabaseUrl || "",
+      supabaseKey: currentData.supabaseKey || "",
+      upiId: currentData.upiId || "",
+    });
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
