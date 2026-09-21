@@ -16,7 +16,7 @@ type AddMemberFormValues = z.infer<typeof addMemberSchema>;
 
 const manualExpenseSchema = z.object({
   desc: z.string().min(1, "Please enter what this was for"),
-  amount: z.coerce.number({ message: "Please enter a valid amount" }).positive("Must be greater than 0"),
+  amount: z.number({ message: "Please enter a valid amount" }).positive("Must be greater than 0"),
   category: z.string().min(1, "Category is required"),
   paidBy: z.string().min(1, "Please select who paid"),
 });
