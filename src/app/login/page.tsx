@@ -4,110 +4,169 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Cpu, ArrowRight, ShieldCheck, Mail, Lock } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+const loginSchema = z.object({
+  email: z.string().min(1, "Email is required").email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required").min(6, "Password must be at least 6 characters"),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [globalError, setGlobalError] = useState("");
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) {
-      setErrorMessage("Please fill out all credentials.");
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
-    setErrorMessage("");
-    // Simulate API authorization response
-    setTimeout(() => {
+    setGlobalError("");
+    setSuccessMessage("");
+    
+    try {
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email: data.email,
+          password: data.password,
+        });
+        if (error) throw error;
+        setSuccessMessage("Sign up successful! Please log in.");
+        setIsSignUp(false);
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: data.email,
+          password: data.password,
+        });
+        if (error) throw error;
+        router.push("/dashboard");
+      }
+    } catch (err: any) {
+      setGlobalError(err.message || "Authentication failed");
+    } finally {
       setIsLoading(false);
-      router.push("/dashboard");
-    }, 1500);
+    }
+  };
+
+  const handleOAuthLogin = async () => {
+    setIsLoading(true);
+    setGlobalError("");
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' });
+      if (error) throw error;
+    } catch (err: any) {
+      setGlobalError(err.message || "OAuth failed");
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-[#030712] flex items-center justify-center p-6 relative overflow-hidden">
       {/* Background Glows */}
-      <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] glow-emerald opacity-20 pointer-events-none"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] glow-blue opacity-20 pointer-events-none"></div>
+      <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] glow-cyan opacity-20 pointer-events-none"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] glow-emerald opacity-20 pointer-events-none"></div>
 
       <div className="max-w-md w-full relative z-10">
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 group mb-4">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-emerald-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-emerald-500/25">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-emerald-450 flex items-center justify-center shadow-lg shadow-cyan-500/25">
               <Cpu className="w-4 h-4 text-black stroke-[2.5]" />
             </div>
-            <span className="heading-font text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">
-              FounderOS<span className="text-emerald-400 font-light">.AI</span>
+            <span className="heading-font text-lg font-bold text-white group-hover:text-cyan-400 transition-colors">
+              FounderOS<span className="text-cyan-400 font-light">.AI</span>
             </span>
           </Link>
-          <h1 className="heading-font text-2xl font-bold text-white">Access Core Console</h1>
-          <p className="text-xs text-gray-500 mt-1.5">Sign in to your validating node or collaborative finance OS ledger.</p>
+          <h1 className="heading-font text-2xl font-bold text-white">
+            {isSignUp ? "Create an account" : "Log in to your account"}
+          </h1>
+          <p className="text-xs text-gray-500 mt-1.5 font-light">
+            {isSignUp ? "Enter your details to register a new node." : "Welcome back! Please enter your details to access your dashboard."}
+          </p>
         </div>
 
         <div className="glass-panel-heavy p-8 rounded-2xl border border-white/10 shadow-2xl relative">
-          <div className="absolute top-0 left-6 transform -translate-y-1/2 px-2.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-[10px] text-emerald-400 font-mono">
-            SECURE ACCESS GATEWAY
+          <div className="absolute top-0 left-6 transform -translate-y-1/2 px-2.5 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/25 text-[10px] text-cyan-400 font-mono">
+            SECURE ACCESS
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
-            {errorMessage && (
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {globalError && (
               <div className="p-3 bg-red-950/40 border border-red-500/30 rounded-xl text-xs text-red-400 text-center">
-                {errorMessage}
+                {globalError}
+              </div>
+            )}
+            {successMessage && (
+              <div className="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-xl text-xs text-emerald-400 text-center">
+                {successMessage}
               </div>
             )}
 
             <div className="space-y-1.5">
-              <label className="text-xs text-gray-400 font-medium block">Venture Email Address</label>
+              <label className="text-xs text-gray-400 font-medium block">What is your email address?</label>
               <div className="relative">
                 <input
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="founder@venture.co"
-                  className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-white placeholder-gray-605 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all font-sans"
+                  {...register("email")}
+                  placeholder="e.g., founder@startup.com"
+                  className={`w-full bg-black/40 border ${errors.email ? 'border-red-500/50 focus:ring-red-500/50' : 'border-white/10 focus:border-cyan-500/50 focus:ring-cyan-500/50'} rounded-xl py-2.5 pl-10 pr-4 text-xs text-white placeholder-gray-600 focus:outline-none focus:ring-1 transition-all font-sans`}
                 />
                 <Mail className="w-4 h-4 text-gray-500 absolute left-3.5 top-3.5" />
               </div>
+              {errors.email && <p className="text-[10px] text-red-400 mt-1">{errors.email.message}</p>}
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs text-gray-400 font-medium block">Key Encryption Password</label>
+              <label className="text-xs text-gray-400 font-medium block">Enter your password</label>
               <div className="relative">
                 <input
                   type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  {...register("password")}
                   placeholder="••••••••••••"
-                  className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-xs text-white placeholder-gray-605 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all font-sans"
+                  className={`w-full bg-black/40 border ${errors.password ? 'border-red-500/50 focus:ring-red-500/50' : 'border-white/10 focus:border-cyan-500/50 focus:ring-cyan-500/50'} rounded-xl py-2.5 pl-10 pr-4 text-xs text-white placeholder-gray-600 focus:outline-none focus:ring-1 transition-all font-sans`}
                 />
-                <Lock className="w-4 h-4 text-gray-500 absolute left-3.5 top-3.5" />
+                <Lock className="w-4 h-4 text-gray-550 absolute left-3.5 top-3.5" />
               </div>
+              {errors.password && <p className="text-[10px] text-red-400 mt-1">{errors.password.message}</p>}
             </div>
 
             <div className="flex justify-between items-center text-[10px] text-gray-500">
               <label className="flex items-center gap-1.5 cursor-pointer">
-                <input type="checkbox" className="rounded bg-black border-white/10 text-emerald-500 focus:ring-0 w-3 h-3" />
-                Keep node logged in
+                <input type="checkbox" className="rounded bg-black border-white/10 text-cyan-500 focus:ring-0 w-3 h-3" />
+                Remember me
               </label>
-              <a href="#" className="hover:text-emerald-400 transition-colors">Recover decryption key</a>
+              {!isSignUp && <a href="#" className="hover:text-cyan-400 transition-colors">Forgot password?</a>}
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-black font-bold text-xs shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-black font-bold text-xs shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all flex justify-center items-center gap-2 cursor-pointer"
             >
               {isLoading ? (
                 <>
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-t-transparent border-black"></div>
-                  Authenticating credentials...
+                  {isSignUp ? "Creating account..." : "Logging in..."}
                 </>
               ) : (
                 <>
-                  Enter Operating Console
+                  {isSignUp ? "Sign Up" : "Log In"}
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -120,16 +179,11 @@ export default function LoginPage() {
           </div>
 
           <button
-            onClick={() => {
-              setIsLoading(true);
-              setTimeout(() => {
-                setIsLoading(false);
-                router.push("/dashboard");
-              }, 1200);
-            }}
-            className="w-full py-2.5 rounded-xl border border-white/5 hover:border-white/15 bg-white/5 text-xs text-white font-medium transition-all flex items-center justify-center gap-2"
+            onClick={handleOAuthLogin}
+            disabled={isLoading}
+            className="w-full py-2.5 rounded-xl border border-white/5 hover:border-white/15 bg-white/5 text-xs text-white font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 text-white" viewBox="0 0 24 24">
               <path
                 fill="currentColor"
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -149,11 +203,29 @@ export default function LoginPage() {
             </svg>
             Sign in with Google account
           </button>
+          
+          <div className="mt-6 text-center text-xs text-gray-500">
+            {isSignUp ? (
+              <>
+                Already have an account?{" "}
+                <button onClick={() => setIsSignUp(false)} className="text-cyan-400 hover:underline">
+                  Log in
+                </button>
+              </>
+            ) : (
+              <>
+                Don't have an account?{" "}
+                <button onClick={() => setIsSignUp(true)} className="text-cyan-400 hover:underline">
+                  Sign up
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         <p className="text-[10px] text-center text-gray-500 mt-6 flex items-center justify-center gap-1">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-          All computational connections encrypted end-to-end.
+          <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
+          Secured by Supabase Auth
         </p>
       </div>
     </div>

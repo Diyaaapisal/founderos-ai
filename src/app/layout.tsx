@@ -1,20 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "FounderOS AI // Next-Gen Startup Validator & Collaborative Finance OS",
-  description: "Scalable and developer-friendly systems built for creators, startups, and indie hackers. Validate product viability and deploy automated corporate frameworks instantly.",
+  title: "FounderOS AI // Next-Gen Collaborative Finance OS",
+  description: "Futuristic AI-powered group expense sharing, predictive budgeting, and debt optimization operating system for high-velocity startups.",
 };
 
 export default function RootLayout({
@@ -23,14 +12,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full scroll-smooth antialiased`}
-    >
-      <body className="bg-darkBg text-neutral-300 min-h-full flex flex-col relative">
-        {/* Global Noise Overlay */}
-        <div className="noise-bg"></div>
-        {children}
+    <html lang="en" className="h-full scroll-smooth antialiased">
+      <body className="bg-dark-bg text-gray-250 min-h-full flex flex-col relative">
+        {/* Shimmer Ambient Glow layer */}
+        <div className="pointer-events-none fixed inset-0 z-0 opacity-40 bg-[radial-gradient(circle_at_50%_0%,rgba(6,182,212,0.02)_0%,transparent_60%)]" />
+        <div className="relative z-10 flex-grow flex flex-col justify-between">
+          {children}
+        </div>
       </body>
     </html>
   );

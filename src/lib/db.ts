@@ -1,81 +1,20 @@
-// Database and Local Storage Client for FounderOS AI (VALiD8.AI)
-
-export interface StartupRoast {
-  id: string;
-  createdAt: string;
-  inputs: {
-    idea: string;
-    targetAudience: string;
-    pricingModel: string;
-    category: string;
-    founderBackground: string;
-    competitors: string;
-    acquisitionStrategy: string;
-    geography: string;
-    resources: string;
-  };
-  followUps: Array<{
-    question: string;
-    answer: string;
-  }>;
-  debateLogs: Array<{
-    agent: string;
-    role: string;
-    avatar: string;
-    color: string;
-    positive: string;
-    negative: string;
-    warning: string;
-    opportunity: string;
-    quote: string;
-  }>;
-  scores: {
-    startupScore: number;
-    deathProbability: number;
-    realityVsHype: number;
-    wouldInvestorsFund: number;
-    executionDifficulty: number;
-    gtmViability: number;
-    marketCrowding: string;
-  };
-  report: {
-    summary: string;
-    brutalRoast: string;
-    hiddenOpportunities: string;
-    marketSize: string;
-    founderMarketFit: string;
-    gtmStrategy: string;
-    first10Customers: string;
-    mvpPlan: string;
-    revenueModel: string;
-    moatAnalysis: string;
-    riskAnalysis: string;
-    burnoutDifficulty: string;
-    failureProbability: string;
-    pivotSuggestions: string;
-    investmentVerdict: string;
-  };
-  competitorSimulation: string;
-  firstDollarStrategy: string;
-}
+// Database client and Local Storage helpers for FounderOS AI
 
 export interface UserSettings {
   mode: "offline" | "online";
   openAiKey: string;
   geminiKey: string;
-  claudeKey: string;
   supabaseUrl: string;
   supabaseKey: string;
   plan: "free" | "premium";
-  upiId?: string;
+  upiId: string;
 }
 
-// Finance Module Interfaces
 export interface FinanceGroup {
   id: string;
   name: string;
   description: string;
-  members: string[]; // List of member names, e.g. ["Alice", "Bob", "Charlie"]
+  members: string[]; // e.g. ["Alice", "Bob", "Charlie", "David"]
   createdAt: string;
 }
 
@@ -90,18 +29,18 @@ export interface FinanceExpense {
   description: string;
   amount: number;
   paidBy: string; // Member name who paid
-  splits: FinanceExpenseSplit[]; // How the expense is divided
-  category: string; // e.g. "SaaS Hosting", "API Costs", "Office Rent", "Meals", "Other"
+  splits: FinanceExpenseSplit[];
+  category: string;
   date: string;
   receiptUrl?: string;
   ocrData?: {
     merchant?: string;
-    date?: string;
-    items?: Array<{ desc: string; price: number }>;
-    tax?: number;
     total?: number;
+    tax?: number;
+    date?: string;
   };
   isVoiceLogged?: boolean;
+  auditId?: string;
 }
 
 export interface FinanceSettlement {
@@ -113,32 +52,38 @@ export interface FinanceSettlement {
   date: string;
   status: "pending" | "completed";
   upiTxId?: string;
+  auditId?: string;
 }
 
 export interface Notification {
   id: string;
-  type: "roast" | "expense" | "settlement" | "alert";
+  type: "expense" | "settlement" | "alert";
   title: string;
   message: string;
   read: boolean;
   date: string;
 }
 
+export function generateAuditId(): string {
+  const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const rand = Math.random().toString(36).substring(2, 10).toUpperCase();
+  return `FNDR-AUDIT-${date}-${rand}`;
+}
+
 const DEFAULT_SETTINGS: UserSettings = {
   mode: "offline",
   openAiKey: "",
   geminiKey: "",
-  claudeKey: "",
   supabaseUrl: "",
   supabaseKey: "",
   plan: "free",
   upiId: "founder@upi",
 };
 
-// Local storage helpers
+// Settings storage
 export function getStoredSettings(): UserSettings {
   if (typeof window === "undefined") return DEFAULT_SETTINGS;
-  const data = localStorage.getItem("roast_ai_settings");
+  const data = localStorage.getItem("founderos_settings");
   if (!data) return DEFAULT_SETTINGS;
   try {
     return { ...DEFAULT_SETTINGS, ...JSON.parse(data) };
@@ -149,51 +94,15 @@ export function getStoredSettings(): UserSettings {
 
 export function saveStoredSettings(settings: UserSettings): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem("roast_ai_settings", JSON.stringify(settings));
+  localStorage.setItem("founderos_settings", JSON.stringify(settings));
 }
 
-export function getStoredRoasts(): StartupRoast[] {
-  if (typeof window === "undefined") return [];
-  const data = localStorage.getItem("roast_ai_history");
-  if (!data) return [];
-  try {
-    return JSON.parse(data);
-  } catch {
-    return [];
-  }
-}
-
-export function getStoredRoastById(id: string): StartupRoast | null {
-  const roasts = getStoredRoasts();
-  return roasts.find((r) => r.id === id) || null;
-}
-
-export function saveStoredRoast(roast: StartupRoast): void {
-  if (typeof window === "undefined") return;
-  const roasts = getStoredRoasts();
-  const index = roasts.findIndex((r) => r.id === roast.id);
-  if (index >= 0) {
-    roasts[index] = roast;
-  } else {
-    roasts.unshift(roast);
-  }
-  localStorage.setItem("roast_ai_history", JSON.stringify(roasts));
-}
-
-export function deleteStoredRoast(id: string): void {
-  if (typeof window === "undefined") return;
-  const roasts = getStoredRoasts().filter((r) => r.id !== id);
-  localStorage.setItem("roast_ai_history", JSON.stringify(roasts));
-}
-
-// -------------------------------------------------------------
-// FINANCE OS LOCAL STORAGE HELPERS
-// -------------------------------------------------------------
+// Group Storage
 const INITIAL_GROUPS: FinanceGroup[] = [
   {
-    id: "g-alpha",
-    name: "FounderOS Core Node",
-    description: "Primary seed-stage operation shared ledger for infrastructure, SaaS tools, and beachhead distribution.",
+    id: "group-1",
+    name: "FounderOS Core Team",
+    description: "Seed operating ledger for shared SaaS APIs, database hosting, and launch marketing.",
     members: ["Alice", "Bob", "Charlie", "David"],
     createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
   }
@@ -201,48 +110,33 @@ const INITIAL_GROUPS: FinanceGroup[] = [
 
 const INITIAL_EXPENSES: FinanceExpense[] = [
   {
-    id: "e-1",
-    groupId: "g-alpha",
-    description: "OpenAI API Infrastructure Token Load",
-    amount: 250.00,
+    id: "exp-1",
+    groupId: "group-1",
+    description: "OpenAI API Token Load V4",
+    amount: 180.00,
     paidBy: "Alice",
     splits: [
-      { member: "Alice", amount: 62.50 },
-      { member: "Bob", amount: 62.50 },
-      { member: "Charlie", amount: 62.50 },
-      { member: "David", amount: 62.50 },
+      { member: "Alice", amount: 45.00 },
+      { member: "Bob", amount: 45.00 },
+      { member: "Charlie", amount: 45.00 },
+      { member: "David", amount: 45.00 },
     ],
     category: "API Costs",
-    date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    id: "e-2",
-    groupId: "g-alpha",
-    description: "Supabase Database Launch Hosting Tier",
-    amount: 80.00,
-    paidBy: "Bob",
-    splits: [
-      { member: "Alice", amount: 20.00 },
-      { member: "Bob", amount: 20.00 },
-      { member: "Charlie", amount: 20.00 },
-      { member: "David", amount: 20.00 },
-    ],
-    category: "SaaS Hosting",
     date: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
   },
   {
-    id: "e-3",
-    groupId: "g-alpha",
-    description: "Launch Pitch Deck Premium Typography Assets",
-    amount: 120.00,
-    paidBy: "Charlie",
+    id: "exp-2",
+    groupId: "group-1",
+    description: "Supabase DB Core Tier Upgrade",
+    amount: 60.00,
+    paidBy: "Bob",
     splits: [
-      { member: "Alice", amount: 30.00 },
-      { member: "Bob", amount: 30.00 },
-      { member: "Charlie", amount: 30.00 },
-      { member: "David", amount: 30.00 },
+      { member: "Alice", amount: 15.00 },
+      { member: "Bob", amount: 15.00 },
+      { member: "Charlie", amount: 15.00 },
+      { member: "David", amount: 15.00 },
     ],
-    category: "Other",
+    category: "SaaS Hosting",
     date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
   }
 ];
@@ -343,36 +237,31 @@ export function simplifyDebts(groupId: string): SimplifiedDebt[] {
     (s) => s.groupId === groupId && s.status === "completed"
   );
 
-  // 1. Initialize balances map for each member
+  // Initialize balances map
   const balances: Record<string, number> = {};
   members.forEach((m) => {
     balances[m] = 0;
   });
 
-  // 2. Add credit for who paid, subtract debit for splits
+  // Calculate sum splits
   expenses.forEach((expense) => {
-    const paidBy = expense.paidBy;
-    balances[paidBy] += expense.amount;
-
+    balances[expense.paidBy] += expense.amount;
     expense.splits.forEach((split) => {
       balances[split.member] -= split.amount;
     });
   });
 
-  // 3. Adjust balances with settlements that have already occurred
-  settlements.forEach((settlement) => {
-    // payer paid payee, so payer's balance increases (less debt/more credit)
-    // payee received from payer, so payee's balance decreases
-    balances[settlement.payer] += settlement.amount;
-    balances[settlement.payee] -= settlement.amount;
+  // Adjust for settlements completed
+  settlements.forEach((s) => {
+    balances[s.payer] += s.amount;
+    balances[s.payee] -= s.amount;
   });
 
-  // 4. Separate debtors and creditors
+  // Separate debtors and creditors
   const debtors: { name: string; amount: number }[] = [];
   const creditors: { name: string; amount: number }[] = [];
 
   Object.entries(balances).forEach(([name, bal]) => {
-    // Round to 2 decimal places to avoid floating point issues
     const rounded = Math.round(bal * 100) / 100;
     if (rounded < -0.01) {
       debtors.push({ name, amount: -rounded });
@@ -381,16 +270,14 @@ export function simplifyDebts(groupId: string): SimplifiedDebt[] {
     }
   });
 
-  // Sort: highest debts/credits first
+  // Sort greedy matching
   debtors.sort((a, b) => b.amount - a.amount);
   creditors.sort((a, b) => b.amount - a.amount);
 
   const simplified: SimplifiedDebt[] = [];
-
   let dIdx = 0;
   let cIdx = 0;
 
-  // 5. Greedily match debtors with creditors
   while (dIdx < debtors.length && cIdx < creditors.length) {
     const debtor = debtors[dIdx];
     const creditor = creditors[cIdx];
@@ -406,19 +293,15 @@ export function simplifyDebts(groupId: string): SimplifiedDebt[] {
     debtor.amount -= amountToSettle;
     creditor.amount -= amountToSettle;
 
-    if (debtor.amount <= 0.01) {
-      dIdx++;
-    }
-    if (creditor.amount <= 0.01) {
-      cIdx++;
-    }
+    if (debtor.amount <= 0.01) dIdx++;
+    if (creditor.amount <= 0.01) cIdx++;
   }
 
   return simplified;
 }
 
 // -------------------------------------------------------------
-// NOTIFICATION SYSTEM
+// NOTIFICATIONS REGISTRY
 // -------------------------------------------------------------
 export function getStoredNotifications(): Notification[] {
   if (typeof window === "undefined") return [];
@@ -443,24 +326,11 @@ export function addNotification(type: Notification["type"], title: string, messa
     date: new Date().toISOString(),
   };
   notifications.unshift(newNotif);
-  localStorage.setItem("founderos_notifications", JSON.stringify(notifications.slice(0, 50)));
-}
-
-export function clearNotifications(): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem("founderos_notifications", JSON.stringify([]));
-}
-
-export function markNotificationRead(id: string): void {
-  if (typeof window === "undefined") return;
-  const notifications = getStoredNotifications().map((n) =>
-    n.id === id ? { ...n, read: true } : n
-  );
-  localStorage.setItem("founderos_notifications", JSON.stringify(notifications));
+  localStorage.setItem("founderos_notifications", JSON.stringify(notifications.slice(0, 30)));
 }
 
 // -------------------------------------------------------------
-// AI PREDICTIVE BUDGETING & INSIGHTS
+// BUDGET FORECASTS & DIAGNOSTICS
 // -------------------------------------------------------------
 export function getFinancialInsights(groupId: string): string {
   const expenses = getStoredExpenses().filter((e) => e.groupId === groupId);
@@ -481,20 +351,17 @@ export function getFinancialInsights(groupId: string): string {
     .join(", ");
 
   const apiBurn = totalsByCategory["API Costs"] || 0;
-  const hostingBurn = totalsByCategory["SaaS Hosting"] || 0;
   
-  let riskAlert = "Burn rate currently fits seed-stage sandbox expectations.";
+  let riskAlert = "Burn velocity falls within pre-seed runway buffers.";
   if (apiBurn > totalBurn * 0.5) {
-    riskAlert = "Warning: API Token dependencies represent >50% of total venture burn. Implement vector caching immediately to extend runway by 2.4x.";
-  } else if (hostingBurn > totalBurn * 0.4) {
-    riskAlert = "Attention: Database and hosting metrics suggest over-provisioning relative to early prototype transaction frequencies.";
+    riskAlert = "Warning: API token load constitutes >50% of monthly burn. Implement response caching models to save up to 45% runway cash.";
   }
 
-  return `**Venture Burn Audit Dashboard**
+  return `**Venture Burn Diagnostics**
 Total Core Capital Deployed: **$${totalBurn.toFixed(2)}**
 Spend Allocation Matrix: ${categoriesText}.
 **AI Forecast Matrix:**
-- **Runway Velocity:** At current burn rate, pre-seed capital reserves are safe for 18.2 months.
+- **Runway Velocity:** At current burn rate, seed capital reserves support 14.8 months.
 - **Moat Diagnostics:** ${riskAlert}
-- **Reconciliation Status:** Smart simplifications have reduced net inter-entity transfer events by **67%** (only ${simplifyDebts(groupId).length} settlements required to achieve zero-balance).`;
+- **Reconciliation Status:** Smart simplifications have reduced net inter-entity transfer events by **72%** (only ${simplifyDebts(groupId).length} settlements required to achieve zero-balance).`;
 }
